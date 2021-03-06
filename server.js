@@ -1,8 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const { animals } = require('./data/animals');
-
-
 const express = require('express');
 const { request } = require('express');
 const PORT = process.env.PORT || 3001;
@@ -12,6 +10,8 @@ const app = express();
 app.use(express.urlencoded({ extended: true}));
 //parse incoming JSON data
 app.use(express.json());
+// have public file readily available
+app.use(express.static('public'));
 
 
 function filterByQuery(query, animalsArray) {
@@ -29,12 +29,6 @@ function filterByQuery(query, animalsArray) {
       // Loop through each trait in the personalityTraits array:
       personalityTraitsArray.forEach(trait => {
         // Check the trait against each animal in the filteredResults array.
-        // Remember, it is initially a copy of the animalsArray,
-        // but here we're updating it for each trait in the .forEach() loop.
-        // For each trait being targeted by the filter, the filteredResults
-        // array will then contain only the entries that contain the trait,
-        // so at the end we'll have an array of animals that have every one 
-        // of the traits when the .forEach() loop is finished.
         filteredResults = filteredResults.filter(
           animal => animal.personalityTraits.indexOf(trait) !== -1
         );
@@ -84,7 +78,7 @@ function filterByQuery(query, animalsArray) {
     }
     return true;
 }
-
+//get animal infor from api
 app.get('/api/animals', (req, res) => {
     let results = animals;
     if (req.query) {
@@ -93,7 +87,7 @@ app.get('/api/animals', (req, res) => {
     res.json(results);
   });
 
-
+//get animal info from api using id
   app.get('/api/animals/:id', (req, res) => {
   const result = findById(req.params.id, animals);
   if (result) {
@@ -102,7 +96,7 @@ app.get('/api/animals', (req, res) => {
     res.send(404);
   }
 });
-
+//post new animal info
 app.post('/api/animals', (req, res) => {
   //set id based on what the next index of the array will be
   req.body.id = animals.length.toString();
@@ -119,6 +113,18 @@ app.post('/api/animals', (req, res) => {
   }
 });
 
+//link Html files
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, './public/index.html'));
+});
+
+app.get('/animals', (req, res) => {
+  res.sendFile(path.join(__dirname, './public/animals.html'));
+});
+
+app.get('/zookeepers', (req, res) => {
+  res.sendFile(path.join(__dirname, './public/zookeepers.html'));
+});
 
 app.listen(PORT, () => {
     console.log(`API server now on port ${PORT}!`);
